@@ -1,7 +1,10 @@
+nameOverride: "nx"
 controller:
-  replicaCount: 6
+  name: modsec
+  replicaCount: ${replica_count}
 
-  electionID: ingress-controller-leader-acme
+  ingressClass: ${controller_name}
+  electionID: ingress-controller-leader-${controller_name}
 
   config:
     enable-modsecurity: "true"
@@ -9,8 +12,6 @@ controller:
     generate-request-id: "true"
     proxy-buffer-size: "16k"
     proxy-body-size: "50m"
-    # Config below is for old TLS versions. Specifically an incident with IE11 on
-    # bank-admin.prisoner-money.service.justice.gov.uk. More info CP Incidents page.
     ssl-ciphers: "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA"
     ssl-protocols: "TLSv1 TLSv1.1 TLSv1.2"
     server-snippet: |
@@ -68,78 +69,33 @@ controller:
 
   publishService:
     enabled: true
+  
+  admissionWebhooks:
+    enabled: false
 
   stats:
     enabled: true
 
   metrics:
     enabled: true
-    service:
-      omitClusterIP: true
     serviceMonitor:
       enabled: true
-      namespace: ${metrics_namespace}
+      namespace: ingress-controllers
+
+%{ if default_cert != "" }
+  extraArgs:
+    default-ssl-certificate: ${default_cert}
+%{~ endif ~}
 
   service:
-    omitClusterIP: true
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: "${external_dns_annotation}"
       service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-
     externalTrafficPolicy: "Local"
 
-  extraArgs:
-    default-ssl-certificate: ingress-controllers/default-certificate
-  
-  admissionWebhooks:
-    enabled: true
-    failurePolicy: Fail
-    port: 8443
-
-    service:
-      annotations: {}
-      omitClusterIP: true
-      clusterIP: ""
-      externalIPs: []
-      loadBalancerIP: ""
-      loadBalancerSourceRanges: []
-      servicePort: 443
-      type: ClusterIP
-
-    patch:
-      enabled: true
-      image:
-        repository: jettech/kube-webhook-certgen
-        tag: v1.0.0
-        pullPolicy: IfNotPresent
-      priorityClassName: ""
-      podAnnotations: {}
-      nodeSelector: {}
-
-  extraVolumeMounts: 
-    - name: shared-memory
-      mountPath: /dev/shm
-
-  extraVolumes:
-    - name: shared-memory
-      emptyDir: 
-        medium: Memory
-
 defaultBackend:
-  enabled: true
-
-  name: default-backend
   image:
     repository: ministryofjustice/cloud-platform-custom-error-pages
     tag: "0.4"
-    pullPolicy: IfNotPresent
-
-  extraArgs: {}
-
-  service:
-    omitClusterIP: true
-
-  port: 8080
 
 rbac:
   create: true
