@@ -100,6 +100,7 @@ controller:
     externalTrafficPolicy: "Local"
 
 defaultBackend:
+  enabled: true
   image:
     repository: ministryofjustice/cloud-platform-custom-error-pages
     tag: "0.4"
