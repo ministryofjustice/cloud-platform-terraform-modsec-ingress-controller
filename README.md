@@ -9,30 +9,26 @@ Terraform module used by the Cloud Platform team to create an ingress-controller
 ```hcl
 module "ingress_controller" {
   source = "github.com/ministryofjustice/cloud-platform-terraform-teams-modsec-controller?ref=0.0.1"
+  controller_name = "modsec01"
 
-  cluster_domain_name = data.terraform_remote_state.cluster.outputs.cluster_domain_name
-  is_live_cluster     = terraform.workspace == local.live_workspace ? true : false
-
-  # This module requires helm and OPA already deployed
-  dependence_prometheus  = helm_release.prometheus_operator
-  dependence_opa         = module.opa.helm_opa_status
-  dependence_certmanager = helm_release.cert-manager
+  replica_count = "3"
+  dependence_prometheus  = module.prometheus.helm_prometheus_operator_status
+  dependence_certmanager = module.cert_manager.helm_cert_manager_status
 }
 ```
 
 ## Inputs
 
-| Name                            | Description                                                   | Type | Default | Required |
-|---------------------------------|---------------------------------------------------------------|:----:|:-------:|:--------:|
-| dependence_prometheus  | Prometheus Dependence variable                                         | string   |       | yes |
-| dependence_opa         | Priority class dependence                                              | string   |       | yes |
-| dependence_certmanager | This module deploys lets-encrypt certs, so it depends on certmanager   | string   |       | yes |
-| cluster_domain_name    | Value used for externalDNS annotations and certmanager                 | string   |       | yes |
-| is_live_cluster        | For live clusters externalDNS annotation will have var.live_domain (default *.cloud-platform.service.justice.gov.uk) | bool   |   false    | yes |
-| live_domain            | The live domain used for externalDNS annotation (only for prod clusters) | string   |  cloud-platform.service.justice.gov.uk  | no |
+
+## Inputs
+
+| Name                   | Description                                                                        | Type   | Default | Required |
+|------------------------|------------------------------------------------------------------------------------|:------:|:-------:|:--------:|
+| controller_name        | Name of the controller, will appear as an annotation for dedicated ingress         | string |    ""   |    yes   |
+| replica_count          | How many replicas you require in your namespace                                    | string |    ""   |    yes   |
+| dependence_prometheus  | When deployed integration_test nginx ingress controller, if prometheus is not deployed before this module fails because it installs serviceMonitor (CRD from prometheus) | string | "NOTHING"  |  no   |
+| dependence_certmanager | When deployed integration_test nginx ingress controller, if certmanager is not deployed before this module fails because it uses certmanager defaultCertificate | string | "NOTHING"  |  no   |
 
 ## Outputs
 
-```
-helm_nginx_ingress_status
-```
+This module doesn't have outputs
