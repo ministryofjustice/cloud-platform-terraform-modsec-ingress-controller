@@ -12,7 +12,7 @@ resource "helm_release" "modsec_ingress_nginx" {
   chart      = "ingress-nginx"
   namespace  = "ingress-controllers"
   repository = data.helm_repository.modsec_ingress_nginx.metadata[0].name
-  version    = "2.13.0"
+  version    = "3.6.0"
 
   values = [templatefile("${path.module}/templates/values.yaml.tpl", {
     controller_name = var.controller_name
