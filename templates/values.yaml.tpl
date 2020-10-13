@@ -3,6 +3,13 @@ controller:
   name: modsec
   replicaCount: ${replica_count}
 
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+
+  minReadySeconds: 12
+
   ingressClass: ${controller_name}
   electionID: ingress-controller-leader-${controller_name}
 
