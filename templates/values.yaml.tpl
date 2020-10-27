@@ -89,6 +89,8 @@ controller:
     serviceMonitor:
       enabled: true
       namespace: ingress-controllers
+      additionalLabels:
+        release: prometheus-operator
 
 %{ if default_cert != "" }
   extraArgs:
