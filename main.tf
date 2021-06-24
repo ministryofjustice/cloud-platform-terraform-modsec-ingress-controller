@@ -7,7 +7,7 @@ resource "helm_release" "modsec_ingress_nginx" {
   chart      = "ingress-nginx"
   namespace  = "ingress-controllers"
   repository = "https://kubernetes.github.io/ingress-nginx"
-  version    = "3.33.0"
+  version    = "3.34.0"
 
   values = [templatefile("${path.module}/templates/values.yaml.tpl", {
     controller_name = var.controller_name
