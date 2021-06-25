@@ -1,6 +1,5 @@
 nameOverride: "nx"
 controller:
-  name: modsec
   replicaCount: ${replica_count}
 
   updateStrategy:
