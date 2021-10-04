@@ -137,7 +137,7 @@ defaultBackend:
   enabled: true
   image:
     repository: ministryofjustice/cloud-platform-custom-error-pages
-    tag: "0.5"
+    tag: "0.6"
 
 rbac:
   create: true
